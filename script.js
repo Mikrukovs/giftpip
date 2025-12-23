@@ -5,6 +5,21 @@ if (tg) {
     tg.ready();
     tg.expand();
     
+    // Request fullscreen mode
+    if (tg.requestFullscreen) {
+        tg.requestFullscreen();
+    }
+    
+    // Disable vertical swipes to prevent closing
+    if (tg.disableVerticalSwipes) {
+        tg.disableVerticalSwipes();
+    }
+    
+    // Lock orientation if supported
+    if (tg.lockOrientation) {
+        tg.lockOrientation();
+    }
+    
     // Apply Telegram theme colors
     document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#1a1a2e');
     document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#ffffff');
