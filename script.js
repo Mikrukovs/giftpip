@@ -8,9 +8,10 @@ if (tg) {
     if (tg.requestFullscreen) tg.requestFullscreen();
     if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
     
-    // Set header/status bar color to match background
-    if (tg.setHeaderColor) tg.setHeaderColor('secondary_bg_color');
-    if (tg.setBackgroundColor) tg.setBackgroundColor('secondary_bg_color');
+    // Set header/status bar color
+    // Use bg_color for proper contrast with status bar text
+    if (tg.setHeaderColor) tg.setHeaderColor('bg_color');
+    if (tg.setBackgroundColor) tg.setBackgroundColor('bg_color');
     
     // Apply all Telegram theme colors
     const tp = tg.themeParams;
