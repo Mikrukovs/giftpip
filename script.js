@@ -530,6 +530,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Show gift content after 1 second delay
+    setTimeout(function() {
+        var giftContent = document.getElementById('gift-content');
+        if (giftContent) {
+            giftContent.classList.add('visible');
+        }
+    }, 1000);
+    
     window.card3d = card3d;
     window.scratch = scratch;
 });
