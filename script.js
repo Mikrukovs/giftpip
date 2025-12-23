@@ -111,7 +111,7 @@ class Card3D {
                 const deltaBeta = beta - this.baseBeta;
                 const deltaGamma = gamma - this.baseGamma;
                 
-                this.targetRotateX = this.clamp(deltaBeta * 0.8, -25, 25);
+                this.targetRotateX = this.clamp(-deltaBeta * 0.8, -25, 25);
                 this.targetRotateY = this.clamp(deltaGamma * 1.0, -25, 25);
                 
                 this.applyTransform();
@@ -202,7 +202,7 @@ class Card3D {
                 const deltaBeta = beta - this.baseBeta;
                 const deltaGamma = gamma - this.baseGamma;
                 
-                this.targetRotateX = this.clamp(deltaBeta * 0.8, -25, 25);
+                this.targetRotateX = this.clamp(-deltaBeta * 0.8, -25, 25);
                 this.targetRotateY = this.clamp(deltaGamma * 1.0, -25, 25);
             }
         }, true);
