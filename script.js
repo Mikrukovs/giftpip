@@ -59,57 +59,31 @@ class ScratchCard {
         const container = this.canvas.parentElement;
         const rect = container.getBoundingClientRect();
         
-        // Handle high DPI displays
-        const dpr = window.devicePixelRatio || 1;
-        
-        // Set canvas internal resolution
-        this.canvas.width = Math.round(rect.width * dpr);
-        this.canvas.height = Math.round(rect.height * dpr);
-        
-        // Set canvas display size
-        this.canvas.style.width = rect.width + 'px';
-        this.canvas.style.height = rect.height + 'px';
-        
-        // Reset transform and apply DPI scaling
-        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-        this.ctx.scale(dpr, dpr);
+        // Simple setup without DPI scaling for reliability
+        this.canvas.width = rect.width;
+        this.canvas.height = rect.height;
         
         this.width = rect.width;
         this.height = rect.height;
-        this.dpr = dpr;
     }
     
     drawScratchLayer() {
+        // Clear canvas first
+        this.ctx.clearRect(0, 0, this.width, this.height);
+        
         // Create metallic scratch surface
         const gradient = this.ctx.createLinearGradient(0, 0, this.width, this.height);
-        gradient.addColorStop(0, '#c0c0c0');
-        gradient.addColorStop(0.3, '#e8e8e8');
-        gradient.addColorStop(0.5, '#d8d8d8');
-        gradient.addColorStop(0.7, '#e0e0e0');
-        gradient.addColorStop(1, '#b8b8b8');
+        gradient.addColorStop(0, '#b0b0b0');
+        gradient.addColorStop(0.3, '#d5d5d5');
+        gradient.addColorStop(0.5, '#c8c8c8');
+        gradient.addColorStop(0.7, '#d0d0d0');
+        gradient.addColorStop(1, '#a8a8a8');
         
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, this.width, this.height);
         
-        // Add subtle noise texture
-        this.addNoiseTexture();
-        
         // Add scratch instructions
         this.addInstructions();
-    }
-    
-    addNoiseTexture() {
-        const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-        const data = imageData.data;
-        
-        for (let i = 0; i < data.length; i += 4) {
-            const noise = (Math.random() - 0.5) * 15;
-            data[i] += noise;     // R
-            data[i + 1] += noise; // G
-            data[i + 2] += noise; // B
-        }
-        
-        this.ctx.putImageData(imageData, 0, 0);
     }
     
     addInstructions() {
