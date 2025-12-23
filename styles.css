@@ -90,65 +90,6 @@ body {
     transition: transform 0.15s ease-out;
 }
 
-/* Holographic background */
-.holo-layer {
-    position: absolute;
-    inset: 0;
-    border-radius: 24px;
-    background: 
-        linear-gradient(
-            125deg,
-            #ff0000 0%,
-            #ff8000 10%,
-            #ffff00 20%,
-            #80ff00 30%,
-            #00ff00 40%,
-            #00ff80 50%,
-            #00ffff 60%,
-            #0080ff 70%,
-            #0000ff 80%,
-            #8000ff 90%,
-            #ff00ff 100%
-        );
-    background-size: 400% 400%;
-    animation: holoShift 8s ease infinite;
-    opacity: 0.9;
-}
-
-/* Holographic shine overlay */
-.holo-shine {
-    position: absolute;
-    inset: 0;
-    border-radius: 24px;
-    background: 
-        radial-gradient(
-            ellipse at var(--mouse-x) var(--mouse-y),
-            rgba(255, 255, 255, 0.4) 0%,
-            rgba(255, 255, 255, 0.1) 30%,
-            transparent 70%
-        );
-    mix-blend-mode: overlay;
-    pointer-events: none;
-}
-
-/* Sparkle effect */
-.holo-sparkles {
-    position: absolute;
-    inset: 0;
-    border-radius: 24px;
-    background-image: 
-        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.8) 0%, transparent 2%),
-        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.6) 0%, transparent 2%),
-        radial-gradient(circle at 40% 70%, rgba(255,255,255,0.7) 0%, transparent 1.5%),
-        radial-gradient(circle at 70% 60%, rgba(255,255,255,0.5) 0%, transparent 2%),
-        radial-gradient(circle at 30% 50%, rgba(255,255,255,0.6) 0%, transparent 1%),
-        radial-gradient(circle at 60% 40%, rgba(255,255,255,0.7) 0%, transparent 1.5%),
-        radial-gradient(circle at 85% 75%, rgba(255,255,255,0.5) 0%, transparent 2%),
-        radial-gradient(circle at 15% 85%, rgba(255,255,255,0.6) 0%, transparent 1.5%);
-    animation: sparkle 3s ease-in-out infinite;
-    pointer-events: none;
-}
-
 /* Card glow */
 .card-3d::before {
     content: '';
@@ -316,21 +257,6 @@ body {
 }
 
 
-@keyframes holoShift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-}
-
-@keyframes borderGlow {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-}
-
-@keyframes sparkle {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
-}
-
 @keyframes bounce {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
@@ -343,13 +269,6 @@ body {
 }
 
 /* Revealed state */
-.card-3d.revealed .holo-layer,
-.card-3d.revealed .holo-shine,
-.card-3d.revealed .holo-sparkles {
-    opacity: 0;
-    transition: opacity 0.5s ease;
-}
-
 .card-3d.revealed .content-layer {
     opacity: 1;
 }

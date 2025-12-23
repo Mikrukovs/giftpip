@@ -77,8 +77,6 @@ class Card3D {
         });
         
         tg.onEvent('deviceOrientationChanged', () => {
-            if (this.isTouching) return;
-            
             const orientation = tg.DeviceOrientation;
             if (orientation && orientation.absolute !== undefined) {
                 // alpha: 0-360 (компас)
@@ -89,12 +87,6 @@ class Card3D {
                 
                 this.targetRotateX = this.clamp(beta * 0.4, -30, 30);
                 this.targetRotateY = this.clamp(gamma * 0.6, -30, 30);
-                
-                // Обновляем блик
-                this.updateShine(
-                    0.5 + gamma / 180,
-                    0.5 + beta / 360
-                );
             }
         });
         
@@ -124,8 +116,6 @@ class Card3D {
         });
         
         tg.onEvent('gyroscopeChanged', () => {
-            if (this.isTouching) return;
-            
             const gyro = tg.Gyroscope;
             if (gyro) {
                 // x, y, z - угловая скорость в рад/с
@@ -189,40 +179,16 @@ class Card3D {
     bindNativeGyroscope() {
         this.motionEnabled = true;
         window.addEventListener('deviceorientation', (e) => {
-            if (this.isTouching) return;
             if (e.beta !== null && e.gamma !== null) {
                 this.targetRotateX = this.clamp((e.beta - 45) * 0.4, -30, 30);
                 this.targetRotateY = this.clamp(e.gamma * 0.6, -30, 30);
-                this.updateShine(0.5 + e.gamma / 180, 0.5 + (e.beta - 45) / 180);
             }
         }, true);
     }
     
     setupTouchTilt() {
-        this.wrapper.addEventListener('touchstart', () => {
-            this.isTouching = true;
-        }, { passive: true });
-        
-        this.wrapper.addEventListener('touchmove', (e) => {
-            if (e.touches.length > 0) {
-                const rect = this.wrapper.getBoundingClientRect();
-                const x = (e.touches[0].clientX - rect.left) / rect.width;
-                const y = (e.touches[0].clientY - rect.top) / rect.height;
-                
-                this.targetRotateY = (x - 0.5) * 50;
-                this.targetRotateX = (0.5 - y) * 50;
-                this.updateShine(x, y);
-            }
-        }, { passive: true });
-        
-        this.wrapper.addEventListener('touchend', () => {
-            this.isTouching = false;
-            if (!this.motionEnabled) {
-                this.targetRotateX = 0;
-                this.targetRotateY = 0;
-                this.updateShine(0.5, 0.5);
-            }
-        });
+        // На мобильных устройствах отключаем tilt по тапу
+        // Карточка наклоняется только от гироскопа
     }
     
     setupMouse() {
@@ -233,21 +199,12 @@ class Card3D {
             
             this.targetRotateY = (x - 0.5) * 40;
             this.targetRotateX = (0.5 - y) * 40;
-            this.updateShine(x, y);
         });
         
         this.wrapper.addEventListener('mouseleave', () => {
             this.targetRotateX = 0;
             this.targetRotateY = 0;
-            this.updateShine(0.5, 0.5);
         });
-    }
-    
-    updateShine(x, y) {
-        const cx = Math.max(0, Math.min(1, x));
-        const cy = Math.max(0, Math.min(1, y));
-        document.documentElement.style.setProperty('--mouse-x', `${cx * 100}%`);
-        document.documentElement.style.setProperty('--mouse-y', `${cy * 100}%`);
     }
     
     clamp(value, min, max) {
