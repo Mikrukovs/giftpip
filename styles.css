@@ -69,8 +69,12 @@ body {
 }
 
 .title {
-    font-size: 1.8rem;
-    font-weight: 900;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', 'SF Pro Display', sans-serif;
+    font-size: 34px;
+    font-style: normal;
+    font-weight: 590;
+    line-height: 41px;
+    letter-spacing: 0.4px;
     color: var(--tg-theme-text-color);
     margin-bottom: 8px;
 }
@@ -401,7 +405,8 @@ body {
     }
     
     .title {
-        font-size: 1.5rem;
+        font-size: 28px;
+        line-height: 34px;
     }
 }
 
