@@ -37,6 +37,10 @@ if (tg) {
 class Card3D {
     constructor(elementId) {
         this.card = document.getElementById(elementId);
+        if (!this.card) {
+            console.error('Card3D: element not found:', elementId);
+            return;
+        }
         this.wrapper = this.card.parentElement;
         this.rotateX = 0;
         this.rotateY = 0;
@@ -286,7 +290,11 @@ class Card3D {
 class ScratchCard {
     constructor(canvasId, options = {}) {
         this.canvas = document.getElementById(canvasId);
-        if (!this.canvas) return;
+        if (!this.canvas) {
+            console.error('ScratchCard: canvas not found:', canvasId);
+            return;
+        }
+        console.log('ScratchCard: canvas found, size:', this.canvas.getBoundingClientRect());
         
         this.ctx = this.canvas.getContext('2d');
         
@@ -495,6 +503,10 @@ function createConfetti() {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing...');
+    console.log('card3d element:', document.getElementById('card3d'));
+    console.log('scratch-canvas element:', document.getElementById('scratch-canvas'));
+    
     const card3d = new Card3D('card3d');
     
     const scratch = new ScratchCard('scratch-canvas', {
