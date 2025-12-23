@@ -495,6 +495,41 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Gift button - copy credentials to clipboard
+    var giftButton = document.querySelector('.gift-button');
+    if (giftButton) {
+        giftButton.addEventListener('click', function() {
+            var textToCopy = 'pip.des25@gmail.com\npecfot-Risru4-ximsow';
+            
+            navigator.clipboard.writeText(textToCopy).then(function() {
+                // Success feedback
+                if (tg && tg.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('success');
+                }
+                
+                // Visual feedback
+                var originalText = giftButton.textContent;
+                giftButton.textContent = 'Скопировано!';
+                giftButton.style.background = '#34c759';
+                
+                setTimeout(function() {
+                    giftButton.textContent = originalText;
+                    giftButton.style.background = '';
+                }, 2000);
+                
+                // Show Telegram popup if available
+                if (tg && tg.showAlert) {
+                    tg.showAlert('Данные скопированы в буфер обмена!');
+                }
+            }).catch(function(err) {
+                console.error('Failed to copy:', err);
+                if (tg && tg.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('error');
+                }
+            });
+        });
+    }
+    
     window.card3d = card3d;
     window.scratch = scratch;
 });
