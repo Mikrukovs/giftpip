@@ -48,7 +48,6 @@ class Card3D {
         this.targetRotateY = 0;
         this.motionEnabled = false;
         
-        // Калибровка — начальное положение телефона
         this.calibrated = false;
         this.baseBeta = 0;
         this.baseGamma = 0;
@@ -70,40 +69,33 @@ class Card3D {
         console.log('DeviceOrientation:', tg.DeviceOrientation);
         console.log('Gyroscope:', tg.Gyroscope);
         
-        // Сначала подписываемся на ВСЕ события
         this.setupTelegramEvents();
         
-        // Затем пробуем запустить DeviceOrientation (приоритет)
         if (tg.DeviceOrientation && typeof tg.DeviceOrientation.start === 'function') {
             console.log('Starting Telegram DeviceOrientation...');
             tg.DeviceOrientation.start({ refresh_rate: 60 });
-        }
-        // Или Gyroscope
-        else if (tg.Gyroscope && typeof tg.Gyroscope.start === 'function') {
+        } else if (tg.Gyroscope && typeof tg.Gyroscope.start === 'function') {
             console.log('Starting Telegram Gyroscope...');
             tg.Gyroscope.start({ refresh_rate: 60 });
-        }
-        else {
+        } else {
             console.log('Telegram Motion APIs not available, falling back');
             this.fallbackToNativeGyro();
         }
     }
     
     setupTelegramEvents() {
-        // DeviceOrientation events
         tg.onEvent('deviceOrientationStarted', () => {
-            console.log('✅ deviceOrientationStarted');
+            console.log('deviceOrientationStarted');
             this.motionEnabled = true;
             this.removeGyroButton();
         });
         
         tg.onEvent('deviceOrientationStopped', () => {
-            console.log('⏹ deviceOrientationStopped');
+            console.log('deviceOrientationStopped');
         });
         
         tg.onEvent('deviceOrientationFailed', (data) => {
-            console.log('❌ deviceOrientationFailed:', data);
-            // Пробуем Gyroscope как fallback
+            console.log('deviceOrientationFailed:', data);
             if (tg.Gyroscope && typeof tg.Gyroscope.start === 'function') {
                 console.log('Trying Gyroscope as fallback...');
                 tg.Gyroscope.start({ refresh_rate: 60 });
@@ -115,12 +107,10 @@ class Card3D {
         tg.onEvent('deviceOrientationChanged', () => {
             const o = tg.DeviceOrientation;
             if (o) {
-                // Данные приходят в РАДИАНАХ! Конвертируем в градусы
-                const RAD_TO_DEG = 180 / Math.PI; // ≈ 57.3
+                const RAD_TO_DEG = 180 / Math.PI;
                 const beta = (o.beta || 0) * RAD_TO_DEG;
                 const gamma = (o.gamma || 0) * RAD_TO_DEG;
                 
-                // Калибровка: запоминаем начальное положение
                 if (!this.calibrated) {
                     this.baseBeta = beta;
                     this.baseGamma = gamma;
@@ -128,7 +118,6 @@ class Card3D {
                     console.log('Calibrated at:', this.baseBeta.toFixed(1), this.baseGamma.toFixed(1));
                 }
                 
-                // Вычисляем отклонение от начального положения
                 const deltaBeta = beta - this.baseBeta;
                 const deltaGamma = gamma - this.baseGamma;
                 
@@ -139,26 +128,24 @@ class Card3D {
             }
         });
         
-        // Gyroscope events
         tg.onEvent('gyroscopeStarted', () => {
-            console.log('✅ gyroscopeStarted');
+            console.log('gyroscopeStarted');
             this.motionEnabled = true;
             this.removeGyroButton();
         });
         
         tg.onEvent('gyroscopeStopped', () => {
-            console.log('⏹ gyroscopeStopped');
+            console.log('gyroscopeStopped');
         });
         
         tg.onEvent('gyroscopeFailed', (data) => {
-            console.log('❌ gyroscopeFailed:', data);
+            console.log('gyroscopeFailed:', data);
             this.fallbackToNativeGyro();
         });
         
         tg.onEvent('gyroscopeChanged', () => {
             const g = tg.Gyroscope;
             if (g) {
-                // Накапливаем вращение
                 this.targetRotateX += (g.y || 0) * 3;
                 this.targetRotateY += (g.x || 0) * 3;
                 this.targetRotateX = this.clamp(this.targetRotateX, -30, 30);
@@ -185,7 +172,7 @@ class Card3D {
         
         const btn = document.createElement('button');
         btn.className = 'gyro-btn';
-        btn.innerHTML = '📱 Включить наклон';
+        btn.innerHTML = 'Enable Tilt';
         btn.onclick = async () => {
             try {
                 const permission = await DeviceOrientationEvent.requestPermission();
@@ -213,7 +200,6 @@ class Card3D {
                 const beta = e.beta;
                 const gamma = e.gamma;
                 
-                // Калибровка
                 if (!this.calibrated) {
                     this.baseBeta = beta;
                     this.baseGamma = gamma;
@@ -230,8 +216,7 @@ class Card3D {
     }
     
     setupTouchTilt() {
-        // На мобильных устройствах отключаем tilt по тапу
-        // Карточка наклоняется только от гироскопа
+        // Disabled - card tilts only from gyroscope
     }
     
     setupMouse() {
@@ -255,20 +240,16 @@ class Card3D {
     }
     
     applyTransform() {
-        // Плавная интерполяция
         this.rotateX += (this.targetRotateX - this.rotateX) * 0.15;
         this.rotateY += (this.targetRotateY - this.rotateY) * 0.15;
         
-        // Применяем трансформацию напрямую к карточке
         if (this.card) {
-            this.card.style.transform = `rotateX(${this.rotateX}deg) rotateY(${this.rotateY}deg)`;
+            this.card.style.transform = 'rotateX(' + this.rotateX + 'deg) rotateY(' + this.rotateY + 'deg)';
             
-            // Update shimmer position for pattern
-            // Convert rotation to shine position (inverted for natural light reflection)
-            const shineX = 50 + this.rotateY * 2.5; // More movement for visible shimmer
-            const shineY = 50 - this.rotateX * 2.5;
-            document.documentElement.style.setProperty('--shine-x', `${shineX}%`);
-            document.documentElement.style.setProperty('--shine-y', `${shineY}%`);
+            var shineX = 50 + this.rotateY * 2.5;
+            var shineY = 50 - this.rotateX * 2.5;
+            document.documentElement.style.setProperty('--shine-x', shineX + '%');
+            document.documentElement.style.setProperty('--shine-y', shineY + '%');
         }
     }
     
@@ -278,8 +259,8 @@ class Card3D {
     }
     
     stop() {
-        if (tg?.DeviceOrientation?.stop) tg.DeviceOrientation.stop();
-        if (tg?.Gyroscope?.stop) tg.Gyroscope.stop();
+        if (tg && tg.DeviceOrientation && tg.DeviceOrientation.stop) tg.DeviceOrientation.stop();
+        if (tg && tg.Gyroscope && tg.Gyroscope.stop) tg.Gyroscope.stop();
     }
 }
 
@@ -288,21 +269,22 @@ class Card3D {
 // ============================================
 
 class ScratchCard {
-    constructor(canvasId, options = {}) {
+    constructor(canvasId, options) {
+        options = options || {};
         this.canvas = document.getElementById(canvasId);
         if (!this.canvas) {
             console.error('ScratchCard: canvas not found:', canvasId);
             return;
         }
-        console.log('ScratchCard: canvas found, size:', this.canvas.getBoundingClientRect());
+        console.log('ScratchCard: canvas found');
         
         this.ctx = this.canvas.getContext('2d');
         
         this.options = {
             brushSize: options.brushSize || 40,
             revealThreshold: options.revealThreshold || 80,
-            onProgress: options.onProgress || (() => {}),
-            onReveal: options.onReveal || (() => {})
+            onProgress: options.onProgress || function() {},
+            onReveal: options.onReveal || function() {}
         };
         
         this.isDrawing = false;
@@ -310,17 +292,19 @@ class ScratchCard {
         this.lastPoint = null;
         this.lastHapticTime = 0;
         
-        setTimeout(() => this.init(), 100);
+        var self = this;
+        setTimeout(function() { self.init(); }, 100);
     }
     
     init() {
         this.setupCanvas();
         this.drawScratchLayer();
         this.bindEvents();
+        console.log('ScratchCard initialized, size:', this.width, 'x', this.height);
     }
     
     setupCanvas() {
-        const rect = this.canvas.getBoundingClientRect();
+        var rect = this.canvas.getBoundingClientRect();
         this.width = rect.width;
         this.height = rect.height;
         this.canvas.width = this.width;
@@ -328,8 +312,7 @@ class ScratchCard {
     }
     
     drawScratchLayer() {
-        // Silver metallic gradient
-        const gradient = this.ctx.createLinearGradient(0, 0, this.width, this.height);
+        var gradient = this.ctx.createLinearGradient(0, 0, this.width, this.height);
         gradient.addColorStop(0, '#c4c4c4');
         gradient.addColorStop(0.2, '#e0e0e0');
         gradient.addColorStop(0.4, '#d0d0d0');
@@ -340,41 +323,41 @@ class ScratchCard {
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, this.width, this.height);
         
-        // Add subtle pattern texture
         this.ctx.globalAlpha = 0.03;
-        for (let i = 0; i < 100; i++) {
-            const x = Math.random() * this.width;
-            const y = Math.random() * this.height;
+        for (var i = 0; i < 100; i++) {
+            var x = Math.random() * this.width;
+            var y = Math.random() * this.height;
             this.ctx.fillStyle = Math.random() > 0.5 ? '#fff' : '#999';
             this.ctx.fillRect(x, y, 2, 2);
         }
         this.ctx.globalAlpha = 1;
         
-        // Scratch hint text
         this.ctx.font = 'bold 14px Unbounded, sans-serif';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         this.ctx.fillStyle = '#777';
-        this.ctx.fillText('✨ СОТРИ МЕНЯ ✨', this.width / 2, this.height / 2);
+        this.ctx.fillText('SCRATCH ME', this.width / 2, this.height / 2);
     }
     
     bindEvents() {
-        this.canvas.addEventListener('mousedown', (e) => this.handleStart(e));
-        this.canvas.addEventListener('mousemove', (e) => this.handleMove(e));
-        this.canvas.addEventListener('mouseup', () => this.handleEnd());
-        this.canvas.addEventListener('mouseleave', () => this.handleEnd());
+        var self = this;
         
-        this.canvas.addEventListener('touchstart', (e) => this.handleStart(e), { passive: false });
-        this.canvas.addEventListener('touchmove', (e) => this.handleMove(e), { passive: false });
-        this.canvas.addEventListener('touchend', () => this.handleEnd());
+        this.canvas.addEventListener('mousedown', function(e) { self.handleStart(e); });
+        this.canvas.addEventListener('mousemove', function(e) { self.handleMove(e); });
+        this.canvas.addEventListener('mouseup', function() { self.handleEnd(); });
+        this.canvas.addEventListener('mouseleave', function() { self.handleEnd(); });
+        
+        this.canvas.addEventListener('touchstart', function(e) { self.handleStart(e); }, { passive: false });
+        this.canvas.addEventListener('touchmove', function(e) { self.handleMove(e); }, { passive: false });
+        this.canvas.addEventListener('touchend', function() { self.handleEnd(); });
     }
     
     getPos(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const touch = e.touches?.[0];
+        var rect = this.canvas.getBoundingClientRect();
+        var touch = e.touches ? e.touches[0] : null;
         return {
-            x: (touch?.clientX || e.clientX) - rect.left,
-            y: (touch?.clientY || e.clientY) - rect.top
+            x: (touch ? touch.clientX : e.clientX) - rect.left,
+            y: (touch ? touch.clientY : e.clientY) - rect.top
         };
     }
     
@@ -384,20 +367,20 @@ class ScratchCard {
         this.isDrawing = true;
         this.lastPoint = this.getPos(e);
         
-        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
     }
     
     handleMove(e) {
         if (!this.isDrawing || this.isRevealed) return;
         e.preventDefault();
         
-        const pos = this.getPos(e);
+        var pos = this.getPos(e);
         this.scratch(this.lastPoint, pos);
         this.lastPoint = pos;
         
-        const now = Date.now();
+        var now = Date.now();
         if (now - this.lastHapticTime > 50) {
-            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             this.lastHapticTime = now;
         }
         
@@ -428,14 +411,14 @@ class ScratchCard {
     }
     
     checkProgress() {
-        const data = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height).data;
-        let transparent = 0;
+        var data = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height).data;
+        var transparent = 0;
         
-        for (let i = 3; i < data.length; i += 4) {
+        for (var i = 3; i < data.length; i += 4) {
             if (data[i] < 128) transparent++;
         }
         
-        const percentage = Math.round((transparent / (data.length / 4)) * 100);
+        var percentage = Math.round((transparent / (data.length / 4)) * 100);
         this.options.onProgress(percentage);
         
         if (percentage >= this.options.revealThreshold && !this.isRevealed) {
@@ -449,12 +432,13 @@ class ScratchCard {
         this.canvas.style.transition = 'opacity 0.5s ease';
         this.canvas.style.opacity = '0';
         
-        if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         
         this.options.onReveal();
         
-        setTimeout(() => {
-            this.canvas.style.display = 'none';
+        var canvas = this.canvas;
+        setTimeout(function() {
+            canvas.style.display = 'none';
         }, 500);
     }
 }
@@ -464,36 +448,29 @@ class ScratchCard {
 // ============================================
 
 function createConfetti() {
-    const colors = ['#667eea', '#764ba2', '#f093fb', '#43e97b', '#38f9d7', '#ffd700'];
+    var colors = ['#667eea', '#764ba2', '#f093fb', '#43e97b', '#38f9d7', '#ffd700'];
     
-    for (let i = 0; i < 50; i++) {
-        const confetti = document.createElement('div');
-        confetti.style.cssText = `
-            position: fixed;
-            width: ${6 + Math.random() * 6}px;
-            height: ${6 + Math.random() * 6}px;
-            background: ${colors[Math.floor(Math.random() * colors.length)]};
-            border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
-            pointer-events: none;
-            left: ${Math.random() * 100}vw;
-            top: -20px;
-            animation: confettiFall ${2 + Math.random() * 2}s linear forwards;
-            animation-delay: ${Math.random() * 0.5}s;
-            z-index: 1000;
-        `;
+    for (var i = 0; i < 50; i++) {
+        var confetti = document.createElement('div');
+        var size = 6 + Math.random() * 6;
+        var color = colors[Math.floor(Math.random() * colors.length)];
+        var isRound = Math.random() > 0.5;
+        var left = Math.random() * 100;
+        var duration = 2 + Math.random() * 2;
+        var delay = Math.random() * 0.5;
+        
+        confetti.style.cssText = 'position:fixed;width:' + size + 'px;height:' + size + 'px;background:' + color + ';border-radius:' + (isRound ? '50%' : '2px') + ';pointer-events:none;left:' + left + 'vw;top:-20px;animation:confettiFall ' + duration + 's linear forwards;animation-delay:' + delay + 's;z-index:1000;';
         document.body.appendChild(confetti);
-        setTimeout(() => confetti.remove(), 4000);
+        
+        (function(el) {
+            setTimeout(function() { el.remove(); }, 4000);
+        })(confetti);
     }
     
     if (!document.getElementById('confetti-style')) {
-        const style = document.createElement('style');
+        var style = document.createElement('style');
         style.id = 'confetti-style';
-        style.textContent = `
-            @keyframes confettiFall {
-                0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-                100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-            }
-        `;
+        style.textContent = '@keyframes confettiFall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }';
         document.head.appendChild(style);
     }
 }
@@ -502,20 +479,18 @@ function createConfetti() {
 // INIT
 // ============================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing...');
-    console.log('card3d element:', document.getElementById('card3d'));
-    console.log('scratch-canvas element:', document.getElementById('scratch-canvas'));
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded');
     
-    const card3d = new Card3D('card3d');
+    var card3d = new Card3D('card3d');
     
-    const scratch = new ScratchCard('scratch-canvas', {
+    var scratch = new ScratchCard('scratch-canvas', {
         brushSize: 45,
         revealThreshold: 80,
-        onProgress: (percent) => {
-            // Progress tracking (no UI)
+        onProgress: function(percent) {
+            // Progress tracking
         },
-        onReveal: () => {
+        onReveal: function() {
             createConfetti();
         }
     });
