@@ -2,13 +2,11 @@
     --tg-theme-bg-color: #0a0a0f;
     --tg-theme-text-color: #ffffff;
     --tg-theme-hint-color: #a0a0a0;
-    --tg-theme-link-color: #64b5f6;
-    --tg-theme-button-color: #5865f2;
-    --tg-theme-button-text-color: #ffffff;
-    --tg-theme-secondary-bg-color: #16213e;
     
-    --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-    --glow-color: rgba(102, 126, 234, 0.4);
+    --card-rotate-x: 0deg;
+    --card-rotate-y: 0deg;
+    --mouse-x: 50%;
+    --mouse-y: 50%;
 }
 
 * {
@@ -33,7 +31,6 @@ body {
     color: var(--tg-theme-text-color, #ffffff);
     min-height: 100vh;
     min-height: 100dvh;
-    overflow-x: hidden;
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
@@ -50,11 +47,9 @@ body {
     height: 100%;
     padding: 20px;
     gap: 24px;
-    overflow-y: auto;
     background: 
-        radial-gradient(ellipse at 30% 20%, rgba(102, 126, 234, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 70% 80%, rgba(240, 147, 251, 0.06) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 50%, rgba(88, 101, 242, 0.04) 0%, transparent 70%);
+        radial-gradient(ellipse at 30% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(240, 147, 251, 0.08) 0%, transparent 50%);
 }
 
 .header {
@@ -66,64 +61,122 @@ body {
 .title {
     font-size: 1.8rem;
     font-weight: 900;
-    background: var(--accent-gradient);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-bottom: 8px;
-    letter-spacing: -0.02em;
 }
 
 .subtitle {
     font-size: 0.9rem;
-    font-weight: 400;
-    color: var(--tg-theme-hint-color, #a0a0a0);
+    color: var(--tg-theme-hint-color);
     opacity: 0.8;
 }
 
-/* Card wrapper */
-.card-wrapper {
+/* 3D Card Container */
+.card-perspective {
+    perspective: 1000px;
+    perspective-origin: center;
+}
+
+.card-3d {
     position: relative;
     width: 300px;
     height: 300px;
     border-radius: 24px;
-    overflow: hidden;
-    animation: scaleIn 0.6s ease-out;
+    transform-style: preserve-3d;
+    transform: rotateX(var(--card-rotate-x)) rotateY(var(--card-rotate-y));
+    transition: transform 0.1s ease-out;
+    animation: cardFloat 6s ease-in-out infinite;
 }
 
-/* Three.js container */
-#three-container {
+/* Holographic background */
+.holo-layer {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
+    inset: 0;
     border-radius: 24px;
-    overflow: hidden;
+    background: 
+        linear-gradient(
+            125deg,
+            #ff0000 0%,
+            #ff8000 10%,
+            #ffff00 20%,
+            #80ff00 30%,
+            #00ff00 40%,
+            #00ff80 50%,
+            #00ffff 60%,
+            #0080ff 70%,
+            #0000ff 80%,
+            #8000ff 90%,
+            #ff00ff 100%
+        );
+    background-size: 400% 400%;
+    animation: holoShift 8s ease infinite;
+    opacity: 0.9;
 }
 
-#three-container canvas {
-    display: block;
+/* Holographic shine overlay */
+.holo-shine {
+    position: absolute;
+    inset: 0;
     border-radius: 24px;
+    background: 
+        radial-gradient(
+            ellipse at var(--mouse-x) var(--mouse-y),
+            rgba(255, 255, 255, 0.4) 0%,
+            rgba(255, 255, 255, 0.1) 30%,
+            transparent 70%
+        );
+    mix-blend-mode: overlay;
+    pointer-events: none;
+}
+
+/* Sparkle effect */
+.holo-sparkles {
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    background-image: 
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.8) 0%, transparent 2%),
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.6) 0%, transparent 2%),
+        radial-gradient(circle at 40% 70%, rgba(255,255,255,0.7) 0%, transparent 1.5%),
+        radial-gradient(circle at 70% 60%, rgba(255,255,255,0.5) 0%, transparent 2%),
+        radial-gradient(circle at 30% 50%, rgba(255,255,255,0.6) 0%, transparent 1%),
+        radial-gradient(circle at 60% 40%, rgba(255,255,255,0.7) 0%, transparent 1.5%),
+        radial-gradient(circle at 85% 75%, rgba(255,255,255,0.5) 0%, transparent 2%),
+        radial-gradient(circle at 15% 85%, rgba(255,255,255,0.6) 0%, transparent 1.5%);
+    animation: sparkle 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+/* Card glow */
+.card-3d::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 27px;
+    background: linear-gradient(135deg, #667eea, #764ba2, #f093fb, #43e97b, #38f9d7);
+    background-size: 300% 300%;
+    animation: borderGlow 4s ease infinite;
+    z-index: -1;
+    filter: blur(15px);
+    opacity: 0.6;
 }
 
 /* Content layer */
 .content-layer {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(145deg, #1e1e3f 0%, #2d2d5a 100%);
-    padding: 20px;
-    z-index: 2;
+    background: linear-gradient(145deg, #1a1a35 0%, #2a2a50 100%);
     border-radius: 24px;
+    padding: 20px;
     opacity: 0;
     transition: opacity 0.5s ease;
+    z-index: 5;
 }
 
 .content-layer.visible {
@@ -146,21 +199,19 @@ body {
 .gift-text {
     font-size: 1.1rem;
     font-weight: 500;
-    color: var(--tg-theme-text-color);
     line-height: 1.4;
 }
 
 /* Scratch canvas */
 #scratch-canvas {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
+    border-radius: 24px;
     cursor: pointer;
     touch-action: none;
-    border-radius: 24px;
-    z-index: 100;
+    z-index: 10;
 }
 
 /* Progress */
@@ -182,21 +233,22 @@ body {
 .progress-fill {
     height: 100%;
     width: 0%;
-    background: var(--accent-gradient);
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
     border-radius: 3px;
     transition: width 0.3s ease-out;
-    box-shadow: 0 0 10px var(--glow-color);
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
 }
 
 .progress-text {
     font-size: 0.75rem;
     font-weight: 500;
-    color: var(--tg-theme-hint-color, #a0a0a0);
+    color: var(--tg-theme-hint-color);
     text-align: center;
     letter-spacing: 0.05em;
     text-transform: uppercase;
 }
 
+/* Hint */
 .hint {
     display: flex;
     align-items: center;
@@ -206,7 +258,12 @@ body {
     border-radius: 100px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     animation: fadeInUp 0.6s ease-out 0.6s both;
-    z-index: 10;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.hint.hidden {
+    opacity: 0;
+    transform: translateY(10px);
 }
 
 .hint-icon {
@@ -216,37 +273,18 @@ body {
 
 .hint-text {
     font-size: 0.8rem;
-    font-weight: 400;
-    color: var(--tg-theme-hint-color, #a0a0a0);
-}
-
-.hint.hidden {
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.3s ease-out;
+    color: var(--tg-theme-hint-color);
 }
 
 /* Animations */
 @keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeIn {
@@ -254,15 +292,24 @@ body {
     to { opacity: 1; }
 }
 
-@keyframes scaleIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+@keyframes cardFloat {
+    0%, 100% { transform: rotateX(var(--card-rotate-x)) rotateY(var(--card-rotate-y)) translateZ(0); }
+    50% { transform: rotateX(var(--card-rotate-x)) rotateY(var(--card-rotate-y)) translateZ(10px); }
+}
+
+@keyframes holoShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes borderGlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes sparkle {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
 }
 
 @keyframes bounce {
@@ -277,20 +324,20 @@ body {
 }
 
 /* Revealed state */
-.card-wrapper.revealed .content-layer {
-    opacity: 1;
-    animation: celebrate 0.5s ease-out;
+.card-3d.revealed .holo-layer,
+.card-3d.revealed .holo-shine,
+.card-3d.revealed .holo-sparkles {
+    opacity: 0;
+    transition: opacity 0.5s ease;
 }
 
-@keyframes celebrate {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+.card-3d.revealed .content-layer {
+    opacity: 1;
 }
 
 /* Responsive */
 @media (max-width: 360px) {
-    .card-wrapper {
+    .card-3d {
         width: 260px;
         height: 260px;
     }
@@ -305,11 +352,5 @@ body {
 }
 
 /* Hide scrollbar */
-::-webkit-scrollbar {
-    display: none;
-}
-
-body {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
+::-webkit-scrollbar { display: none; }
+body { -ms-overflow-style: none; scrollbar-width: none; }

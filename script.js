@@ -5,13 +5,8 @@ if (tg) {
     tg.ready();
     tg.expand();
     
-    if (tg.requestFullscreen) {
-        tg.requestFullscreen();
-    }
-    
-    if (tg.disableVerticalSwipes) {
-        tg.disableVerticalSwipes();
-    }
+    if (tg.requestFullscreen) tg.requestFullscreen();
+    if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
     
     document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#0a0a0f');
     document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#ffffff');
@@ -19,173 +14,27 @@ if (tg) {
 }
 
 // ============================================
-// HOLOGRAPHIC CARD WITH THREE.JS
+// PSEUDO 3D CARD WITH GYROSCOPE
 // ============================================
 
-class HolographicCard {
-    constructor(containerId) {
-        this.container = document.getElementById(containerId);
-        this.width = this.container.offsetWidth || 300;
-        this.height = this.container.offsetHeight || 300;
+class Card3D {
+    constructor(elementId) {
+        this.card = document.getElementById(elementId);
+        this.rotateX = 0;
+        this.rotateY = 0;
+        this.targetRotateX = 0;
+        this.targetRotateY = 0;
         
-        this.rotationX = 0;
-        this.rotationY = 0;
-        this.targetRotationX = 0;
-        this.targetRotationY = 0;
-        
-        this.init();
         this.setupGyroscope();
+        this.setupMouse();
         this.animate();
     }
     
-    init() {
-        // Scene
-        this.scene = new THREE.Scene();
-        
-        // Camera
-        this.camera = new THREE.PerspectiveCamera(50, this.width / this.height, 0.1, 1000);
-        this.camera.position.z = 2.5;
-        
-        // Renderer
-        this.renderer = new THREE.WebGLRenderer({ 
-            antialias: true, 
-            alpha: true 
-        });
-        this.renderer.setSize(this.width, this.height);
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        this.container.appendChild(this.renderer.domElement);
-        
-        // Create holographic card
-        this.createCard();
-        
-        // Lights
-        this.addLights();
-        
-        // Handle resize
-        window.addEventListener('resize', () => this.onResize());
-    }
-    
-    createCard() {
-        // Card geometry (slightly rounded edges effect with segments)
-        const geometry = new THREE.PlaneGeometry(1.8, 1.8, 64, 64);
-        
-        // Custom holographic shader material
-        this.material = new THREE.ShaderMaterial({
-            uniforms: {
-                time: { value: 0 },
-                rotationX: { value: 0 },
-                rotationY: { value: 0 },
-                colorA: { value: new THREE.Color('#667eea') },
-                colorB: { value: new THREE.Color('#764ba2') },
-                colorC: { value: new THREE.Color('#f093fb') },
-                colorD: { value: new THREE.Color('#43e97b') },
-                colorE: { value: new THREE.Color('#38f9d7') }
-            },
-            vertexShader: `
-                varying vec2 vUv;
-                varying vec3 vPosition;
-                varying vec3 vNormal;
-                
-                void main() {
-                    vUv = uv;
-                    vPosition = position;
-                    vNormal = normal;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
-            fragmentShader: `
-                uniform float time;
-                uniform float rotationX;
-                uniform float rotationY;
-                uniform vec3 colorA;
-                uniform vec3 colorB;
-                uniform vec3 colorC;
-                uniform vec3 colorD;
-                uniform vec3 colorE;
-                
-                varying vec2 vUv;
-                varying vec3 vPosition;
-                varying vec3 vNormal;
-                
-                // Holographic rainbow effect
-                vec3 holographic(vec2 uv, float angle) {
-                    float holo = sin(uv.x * 20.0 + uv.y * 15.0 + angle * 5.0 + time * 2.0) * 0.5 + 0.5;
-                    holo += sin(uv.x * 30.0 - uv.y * 20.0 + angle * 3.0 + time * 1.5) * 0.3;
-                    holo += sin((uv.x + uv.y) * 25.0 + time * 3.0) * 0.2;
-                    return mix(
-                        mix(colorA, colorB, holo),
-                        mix(colorC, mix(colorD, colorE, holo), sin(holo * 3.14159)),
-                        sin(angle * 2.0 + time) * 0.5 + 0.5
-                    );
-                }
-                
-                // Sparkle effect
-                float sparkle(vec2 uv, float time) {
-                    vec2 grid = fract(uv * 30.0);
-                    float spark = sin(grid.x * 31.4159 + time * 5.0) * sin(grid.y * 31.4159 + time * 4.0);
-                    spark = pow(max(spark, 0.0), 20.0);
-                    return spark * 0.5;
-                }
-                
-                void main() {
-                    vec2 uv = vUv;
-                    
-                    // Calculate angle based on rotation for holographic shift
-                    float angle = rotationX * 0.5 + rotationY * 0.5;
-                    
-                    // Base holographic color
-                    vec3 holoColor = holographic(uv, angle);
-                    
-                    // Add iridescent shimmer based on view angle
-                    float shimmer = sin(uv.x * 10.0 + rotationY * 10.0) * 0.5 + 0.5;
-                    shimmer *= sin(uv.y * 10.0 + rotationX * 10.0) * 0.5 + 0.5;
-                    
-                    vec3 shimmerColor = mix(colorD, colorE, shimmer);
-                    holoColor = mix(holoColor, shimmerColor, 0.3);
-                    
-                    // Add sparkles
-                    float spark = sparkle(uv, time);
-                    holoColor += vec3(spark);
-                    
-                    // Fresnel-like edge glow
-                    float edge = 1.0 - max(abs(uv.x - 0.5) * 2.0, abs(uv.y - 0.5) * 2.0);
-                    edge = pow(edge, 0.3);
-                    
-                    // Vignette
-                    float vignette = smoothstep(0.0, 0.7, edge);
-                    
-                    // Final color with slight darkening at edges
-                    vec3 finalColor = holoColor * vignette;
-                    finalColor += vec3(0.1) * (1.0 - vignette); // subtle border
-                    
-                    // Add overall brightness boost
-                    finalColor *= 1.2;
-                    
-                    gl_FragColor = vec4(finalColor, 1.0);
-                }
-            `,
-            side: THREE.FrontSide
-        });
-        
-        this.card = new THREE.Mesh(geometry, this.material);
-        this.scene.add(this.card);
-    }
-    
-    addLights() {
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        this.scene.add(ambientLight);
-        
-        const pointLight = new THREE.PointLight(0xffffff, 1);
-        pointLight.position.set(2, 2, 2);
-        this.scene.add(pointLight);
-    }
-    
     setupGyroscope() {
-        // Request permission for iOS 13+
+        // iOS 13+ требует разрешения
         if (typeof DeviceOrientationEvent !== 'undefined' && 
             typeof DeviceOrientationEvent.requestPermission === 'function') {
-            // Will be triggered on user interaction
-            document.addEventListener('click', () => {
+            document.addEventListener('touchstart', () => {
                 DeviceOrientationEvent.requestPermission()
                     .then(response => {
                         if (response === 'granted') {
@@ -197,84 +46,56 @@ class HolographicCard {
         } else {
             this.bindGyroscope();
         }
-        
-        // Fallback: mouse/touch movement
-        this.setupMouseControl();
     }
     
     bindGyroscope() {
         window.addEventListener('deviceorientation', (e) => {
             if (e.beta !== null && e.gamma !== null) {
-                // beta: front-back tilt (-180 to 180)
-                // gamma: left-right tilt (-90 to 90)
-                this.targetRotationX = THREE.MathUtils.clamp(e.beta, -30, 30) * 0.02;
-                this.targetRotationY = THREE.MathUtils.clamp(e.gamma, -30, 30) * 0.02;
+                // beta: наклон вперёд-назад (-180 to 180)
+                // gamma: наклон влево-вправо (-90 to 90)
+                this.targetRotateX = this.clamp(e.beta - 45, -25, 25);
+                this.targetRotateY = this.clamp(e.gamma, -25, 25);
             }
         });
     }
     
-    setupMouseControl() {
-        const wrapper = this.container.parentElement;
+    setupMouse() {
+        const wrapper = this.card.parentElement;
         
         wrapper.addEventListener('mousemove', (e) => {
             const rect = wrapper.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / rect.width - 0.5;
-            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            const x = (e.clientX - rect.left) / rect.width;
+            const y = (e.clientY - rect.top) / rect.height;
             
-            this.targetRotationY = x * 0.5;
-            this.targetRotationX = -y * 0.5;
+            this.targetRotateY = (x - 0.5) * 30;
+            this.targetRotateX = (0.5 - y) * 30;
+            
+            // Update shine position
+            document.documentElement.style.setProperty('--mouse-x', `${x * 100}%`);
+            document.documentElement.style.setProperty('--mouse-y', `${y * 100}%`);
         });
         
         wrapper.addEventListener('mouseleave', () => {
-            this.targetRotationX = 0;
-            this.targetRotationY = 0;
-        });
-        
-        // Touch support
-        wrapper.addEventListener('touchmove', (e) => {
-            if (e.touches.length > 0) {
-                const rect = wrapper.getBoundingClientRect();
-                const x = (e.touches[0].clientX - rect.left) / rect.width - 0.5;
-                const y = (e.touches[0].clientY - rect.top) / rect.height - 0.5;
-                
-                this.targetRotationY = x * 0.5;
-                this.targetRotationX = -y * 0.5;
-            }
+            this.targetRotateX = 0;
+            this.targetRotateY = 0;
+            document.documentElement.style.setProperty('--mouse-x', '50%');
+            document.documentElement.style.setProperty('--mouse-y', '50%');
         });
     }
     
-    onResize() {
-        this.width = this.container.offsetWidth;
-        this.height = this.container.offsetHeight;
-        
-        this.camera.aspect = this.width / this.height;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(this.width, this.height);
+    clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
     }
     
     animate() {
+        // Плавная интерполяция
+        this.rotateX += (this.targetRotateX - this.rotateX) * 0.08;
+        this.rotateY += (this.targetRotateY - this.rotateY) * 0.08;
+        
+        document.documentElement.style.setProperty('--card-rotate-x', `${this.rotateX}deg`);
+        document.documentElement.style.setProperty('--card-rotate-y', `${this.rotateY}deg`);
+        
         requestAnimationFrame(() => this.animate());
-        
-        // Smooth rotation interpolation
-        this.rotationX += (this.targetRotationX - this.rotationX) * 0.1;
-        this.rotationY += (this.targetRotationY - this.rotationY) * 0.1;
-        
-        // Apply rotation to card
-        this.card.rotation.x = this.rotationX;
-        this.card.rotation.y = this.rotationY;
-        
-        // Update shader uniforms
-        this.material.uniforms.time.value += 0.016;
-        this.material.uniforms.rotationX.value = this.rotationX;
-        this.material.uniforms.rotationY.value = this.rotationY;
-        
-        this.renderer.render(this.scene, this.camera);
-    }
-    
-    dispose() {
-        this.renderer.dispose();
-        this.material.dispose();
-        this.card.geometry.dispose();
     }
 }
 
@@ -285,10 +106,7 @@ class HolographicCard {
 class ScratchCard {
     constructor(canvasId, options = {}) {
         this.canvas = document.getElementById(canvasId);
-        if (!this.canvas) {
-            console.error('Canvas not found:', canvasId);
-            return;
-        }
+        if (!this.canvas) return;
         
         this.ctx = this.canvas.getContext('2d');
         
@@ -303,116 +121,86 @@ class ScratchCard {
         this.isRevealed = false;
         this.lastPoint = null;
         this.lastHapticTime = 0;
-        this.hapticInterval = 50;
         
-        // Wait for layout to settle
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                this.init();
-            });
-        });
+        // Ждём пока layout стабилизируется
+        setTimeout(() => this.init(), 100);
     }
     
     init() {
         this.setupCanvas();
         this.drawScratchLayer();
         this.bindEvents();
-        console.log('Scratch card initialized', this.width, this.height);
     }
     
     setupCanvas() {
-        const rect = this.canvas.parentElement.getBoundingClientRect();
-        
-        this.width = rect.width || 300;
-        this.height = rect.height || 300;
-        
+        const rect = this.canvas.getBoundingClientRect();
+        this.width = rect.width;
+        this.height = rect.height;
         this.canvas.width = this.width;
         this.canvas.height = this.height;
-        
-        console.log('Canvas setup:', this.width, this.height);
     }
     
     drawScratchLayer() {
-        // Silver metallic gradient
+        // Серебристый градиент
         const gradient = this.ctx.createLinearGradient(0, 0, this.width, this.height);
-        gradient.addColorStop(0, '#a8a8a8');
-        gradient.addColorStop(0.2, '#d0d0d0');
-        gradient.addColorStop(0.4, '#c0c0c0');
-        gradient.addColorStop(0.6, '#d8d8d8');
-        gradient.addColorStop(0.8, '#b8b8b8');
-        gradient.addColorStop(1, '#c8c8c8');
+        gradient.addColorStop(0, '#a0a0a0');
+        gradient.addColorStop(0.3, '#d0d0d0');
+        gradient.addColorStop(0.5, '#b8b8b8');
+        gradient.addColorStop(0.7, '#c8c8c8');
+        gradient.addColorStop(1, '#a8a8a8');
         
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, this.width, this.height);
         
-        // Add text
-        this.ctx.save();
+        // Текст
         this.ctx.font = 'bold 16px Unbounded, sans-serif';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.fillStyle = '#666666';
+        this.ctx.fillStyle = '#666';
         this.ctx.fillText('✨ СОТРИ МЕНЯ ✨', this.width / 2, this.height / 2);
-        this.ctx.restore();
-        
-        console.log('Scratch layer drawn');
     }
     
     bindEvents() {
-        // Mouse
         this.canvas.addEventListener('mousedown', (e) => this.handleStart(e));
         this.canvas.addEventListener('mousemove', (e) => this.handleMove(e));
         this.canvas.addEventListener('mouseup', () => this.handleEnd());
         this.canvas.addEventListener('mouseleave', () => this.handleEnd());
         
-        // Touch
         this.canvas.addEventListener('touchstart', (e) => this.handleStart(e), { passive: false });
         this.canvas.addEventListener('touchmove', (e) => this.handleMove(e), { passive: false });
         this.canvas.addEventListener('touchend', () => this.handleEnd());
-        this.canvas.addEventListener('touchcancel', () => this.handleEnd());
     }
     
-    getEventPosition(e) {
+    getPos(e) {
         const rect = this.canvas.getBoundingClientRect();
-        
-        if (e.touches && e.touches.length > 0) {
-            return {
-                x: e.touches[0].clientX - rect.left,
-                y: e.touches[0].clientY - rect.top
-            };
-        }
-        
+        const touch = e.touches?.[0];
         return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
+            x: (touch?.clientX || e.clientX) - rect.left,
+            y: (touch?.clientY || e.clientY) - rect.top
         };
     }
     
     handleStart(e) {
         if (this.isRevealed) return;
         e.preventDefault();
-        
         this.isDrawing = true;
-        this.lastPoint = this.getEventPosition(e);
+        this.lastPoint = this.getPos(e);
         
-        if (tg?.HapticFeedback) {
-            tg.HapticFeedback.impactOccurred('light');
-        }
+        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
     }
     
     handleMove(e) {
         if (!this.isDrawing || this.isRevealed) return;
         e.preventDefault();
         
-        const currentPoint = this.getEventPosition(e);
-        this.scratch(this.lastPoint, currentPoint);
-        this.lastPoint = currentPoint;
+        const pos = this.getPos(e);
+        this.scratch(this.lastPoint, pos);
+        this.lastPoint = pos;
         
-        // Haptic feedback
+        // Вибрация при стирании
         const now = Date.now();
-        if (now - this.lastHapticTime > this.hapticInterval) {
-            if (tg?.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
-            }
+        if (now - this.lastHapticTime > 50) {
+            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             this.lastHapticTime = now;
         }
         
@@ -439,22 +227,18 @@ class ScratchCard {
         this.ctx.beginPath();
         this.ctx.arc(to.x, to.y, this.options.brushSize / 2, 0, Math.PI * 2);
         this.ctx.fill();
-        
         this.ctx.restore();
     }
     
     checkProgress() {
-        const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-        const data = imageData.data;
-        
+        const data = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height).data;
         let transparent = 0;
-        const total = data.length / 4;
         
         for (let i = 3; i < data.length; i += 4) {
             if (data[i] < 128) transparent++;
         }
         
-        const percentage = Math.round((transparent / total) * 100);
+        const percentage = Math.round((transparent / (data.length / 4)) * 100);
         this.options.onProgress(percentage);
         
         if (percentage >= this.options.revealThreshold && !this.isRevealed) {
@@ -465,15 +249,13 @@ class ScratchCard {
     reveal() {
         this.isRevealed = true;
         
-        this.canvas.style.transition = 'opacity 0.5s ease-out';
+        this.canvas.style.transition = 'opacity 0.5s ease';
         this.canvas.style.opacity = '0';
         
-        this.canvas.parentElement.classList.add('revealed');
+        document.getElementById('card3d').classList.add('revealed');
         document.getElementById('content').classList.add('visible');
         
-        if (tg?.HapticFeedback) {
-            tg.HapticFeedback.notificationOccurred('success');
-        }
+        if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         
         this.options.onReveal();
         
@@ -489,27 +271,24 @@ class ScratchCard {
 
 function createConfetti() {
     const colors = ['#667eea', '#764ba2', '#f093fb', '#43e97b', '#38f9d7', '#ffd700'];
-    const container = document.querySelector('.app-container');
     
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 50; i++) {
         const confetti = document.createElement('div');
         confetti.style.cssText = `
             position: fixed;
-            width: ${6 + Math.random() * 8}px;
-            height: ${6 + Math.random() * 8}px;
+            width: ${6 + Math.random() * 6}px;
+            height: ${6 + Math.random() * 6}px;
             background: ${colors[Math.floor(Math.random() * colors.length)]};
             border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
             pointer-events: none;
             left: ${Math.random() * 100}vw;
             top: -20px;
-            opacity: 1;
-            transform: rotate(${Math.random() * 360}deg);
             animation: confettiFall ${2 + Math.random() * 2}s linear forwards;
             animation-delay: ${Math.random() * 0.5}s;
+            z-index: 1000;
         `;
-        
-        container.appendChild(confetti);
-        setTimeout(() => confetti.remove(), 4500);
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 4000);
     }
     
     if (!document.getElementById('confetti-style')) {
@@ -526,28 +305,25 @@ function createConfetti() {
 }
 
 // ============================================
-// INITIALIZATION
+// INIT
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize holographic card
-    const holoCard = new HolographicCard('three-container');
+    // 3D карточка с гироскопом
+    const card3d = new Card3D('card3d');
     
-    // Initialize scratch card
+    // Scratch card
     const progressFill = document.getElementById('progress-fill');
     const progressText = document.getElementById('progress-text');
-    const hint = document.querySelector('.hint');
+    const hint = document.getElementById('hint');
     
-    const scratchCard = new ScratchCard('scratch-canvas', {
+    const scratch = new ScratchCard('scratch-canvas', {
         brushSize: 45,
         revealThreshold: 80,
-        onProgress: (percentage) => {
-            progressFill.style.width = percentage + '%';
-            progressText.textContent = `Стёрто: ${percentage}%`;
-            
-            if (percentage > 5) {
-                hint.classList.add('hidden');
-            }
+        onProgress: (percent) => {
+            progressFill.style.width = percent + '%';
+            progressText.textContent = `Стёрто: ${percent}%`;
+            if (percent > 5) hint.classList.add('hidden');
         },
         onReveal: () => {
             progressText.textContent = '🎉 Открыто!';
@@ -556,12 +332,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Expose for debugging
-    window.holoCard = holoCard;
-    window.scratchCard = scratchCard;
+    window.card3d = card3d;
+    window.scratch = scratch;
 });
 
-// Set custom content
+// API для изменения контента
 function setGiftContent(html) {
     document.getElementById('content').innerHTML = html;
 }
