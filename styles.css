@@ -90,21 +90,7 @@ body {
     transition: transform 0.15s ease-out;
 }
 
-/* Card glow */
-.card-3d::before {
-    content: '';
-    position: absolute;
-    inset: -3px;
-    border-radius: 27px;
-    background: linear-gradient(135deg, #667eea, #764ba2, #f093fb, #43e97b, #38f9d7);
-    background-size: 300% 300%;
-    animation: borderGlow 4s ease infinite;
-    z-index: -1;
-    filter: blur(15px);
-    opacity: 0.6;
-}
-
-/* Content layer */
+/* Content layer - visible immediately under scratch */
 .content-layer {
     position: absolute;
     inset: 0;
@@ -114,13 +100,7 @@ body {
     background: linear-gradient(145deg, #1a1a35 0%, #2a2a50 100%);
     border-radius: 24px;
     padding: 20px;
-    opacity: 0;
-    transition: opacity 0.5s ease;
     z-index: 5;
-}
-
-.content-layer.visible {
-    opacity: 1;
 }
 
 .placeholder-content {
@@ -266,11 +246,6 @@ body {
     0%, 100% { transform: rotate(0deg); }
     25% { transform: rotate(-10deg); }
     75% { transform: rotate(10deg); }
-}
-
-/* Revealed state */
-.card-3d.revealed .content-layer {
-    opacity: 1;
 }
 
 /* Responsive */

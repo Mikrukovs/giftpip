@@ -41,102 +41,90 @@ class Card3D {
             return;
         }
         
-        // Приоритет 1: Telegram DeviceOrientation API
-        if (tg.DeviceOrientation) {
-            console.log('Telegram DeviceOrientation available');
-            this.startTelegramDeviceOrientation();
-            return;
-        }
+        console.log('Telegram WebApp version:', tg.version);
+        console.log('DeviceOrientation:', tg.DeviceOrientation);
+        console.log('Gyroscope:', tg.Gyroscope);
         
-        // Приоритет 2: Telegram Gyroscope API
-        if (tg.Gyroscope) {
-            console.log('Telegram Gyroscope available');
-            this.startTelegramGyroscope();
-            return;
-        }
+        // Сначала подписываемся на ВСЕ события
+        this.setupTelegramEvents();
         
-        console.log('Telegram Motion APIs not available, falling back');
-        this.fallbackToNativeGyro();
+        // Затем пробуем запустить DeviceOrientation (приоритет)
+        if (tg.DeviceOrientation && typeof tg.DeviceOrientation.start === 'function') {
+            console.log('Starting Telegram DeviceOrientation...');
+            tg.DeviceOrientation.start({ refresh_rate: 60 });
+        }
+        // Или Gyroscope
+        else if (tg.Gyroscope && typeof tg.Gyroscope.start === 'function') {
+            console.log('Starting Telegram Gyroscope...');
+            tg.Gyroscope.start({ refresh_rate: 60 });
+        }
+        else {
+            console.log('Telegram Motion APIs not available, falling back');
+            this.fallbackToNativeGyro();
+        }
     }
     
-    startTelegramDeviceOrientation() {
-        // Обработчики событий
+    setupTelegramEvents() {
+        // DeviceOrientation events
         tg.onEvent('deviceOrientationStarted', () => {
-            console.log('✅ DeviceOrientation started');
+            console.log('✅ deviceOrientationStarted');
             this.motionEnabled = true;
             this.removeGyroButton();
         });
         
         tg.onEvent('deviceOrientationStopped', () => {
-            console.log('⏹ DeviceOrientation stopped');
+            console.log('⏹ deviceOrientationStopped');
         });
         
         tg.onEvent('deviceOrientationFailed', (data) => {
-            console.log('❌ DeviceOrientation failed:', data?.error);
-            this.fallbackToNativeGyro();
+            console.log('❌ deviceOrientationFailed:', data);
+            // Пробуем Gyroscope как fallback
+            if (tg.Gyroscope && typeof tg.Gyroscope.start === 'function') {
+                console.log('Trying Gyroscope as fallback...');
+                tg.Gyroscope.start({ refresh_rate: 60 });
+            } else {
+                this.fallbackToNativeGyro();
+            }
         });
         
         tg.onEvent('deviceOrientationChanged', () => {
-            const orientation = tg.DeviceOrientation;
-            if (orientation && orientation.absolute !== undefined) {
-                // alpha: 0-360 (компас)
-                // beta: -180 to 180 (наклон вперёд/назад)
-                // gamma: -90 to 90 (наклон влево/вправо)
-                const beta = orientation.beta || 0;
-                const gamma = orientation.gamma || 0;
-                
+            const o = tg.DeviceOrientation;
+            if (o) {
+                const beta = o.beta || 0;
+                const gamma = o.gamma || 0;
                 this.targetRotateX = this.clamp(beta * 0.4, -30, 30);
                 this.targetRotateY = this.clamp(gamma * 0.6, -30, 30);
             }
         });
         
-        // Запускаем
-        try {
-            tg.DeviceOrientation.start({ refresh_rate: 60 });
-        } catch (e) {
-            console.error('DeviceOrientation start error:', e);
-            this.fallbackToNativeGyro();
-        }
-    }
-    
-    startTelegramGyroscope() {
+        // Gyroscope events
         tg.onEvent('gyroscopeStarted', () => {
-            console.log('✅ Gyroscope started');
+            console.log('✅ gyroscopeStarted');
             this.motionEnabled = true;
             this.removeGyroButton();
         });
         
         tg.onEvent('gyroscopeStopped', () => {
-            console.log('⏹ Gyroscope stopped');
+            console.log('⏹ gyroscopeStopped');
         });
         
         tg.onEvent('gyroscopeFailed', (data) => {
-            console.log('❌ Gyroscope failed:', data?.error);
+            console.log('❌ gyroscopeFailed:', data);
             this.fallbackToNativeGyro();
         });
         
         tg.onEvent('gyroscopeChanged', () => {
-            const gyro = tg.Gyroscope;
-            if (gyro) {
-                // x, y, z - угловая скорость в рад/с
-                this.targetRotateX += (gyro.y || 0) * 3;
-                this.targetRotateY += (gyro.x || 0) * 3;
-                
+            const g = tg.Gyroscope;
+            if (g) {
+                // Накапливаем вращение
+                this.targetRotateX += (g.y || 0) * 3;
+                this.targetRotateY += (g.x || 0) * 3;
                 this.targetRotateX = this.clamp(this.targetRotateX, -30, 30);
                 this.targetRotateY = this.clamp(this.targetRotateY, -30, 30);
-                
-                // Медленное возвращение к центру
                 this.targetRotateX *= 0.995;
                 this.targetRotateY *= 0.995;
             }
         });
-        
-        try {
-            tg.Gyroscope.start({ refresh_rate: 60 });
-        } catch (e) {
-            console.error('Gyroscope start error:', e);
-            this.fallbackToNativeGyro();
-        }
     }
     
     fallbackToNativeGyro() {
@@ -375,9 +363,6 @@ class ScratchCard {
         
         this.canvas.style.transition = 'opacity 0.5s ease';
         this.canvas.style.opacity = '0';
-        
-        document.getElementById('card3d').classList.add('revealed');
-        document.getElementById('content').classList.add('visible');
         
         if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         
