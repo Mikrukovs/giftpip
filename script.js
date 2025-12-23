@@ -26,7 +26,11 @@ class Card3D {
         this.targetRotateX = 0;
         this.targetRotateY = 0;
         this.motionEnabled = false;
-        this.isTouching = false;
+        
+        // Калибровка — начальное положение телефона
+        this.calibrated = false;
+        this.baseBeta = 0;
+        this.baseGamma = 0;
         
         this.setupTouchTilt();
         this.setupMouse();
@@ -95,10 +99,21 @@ class Card3D {
                 const beta = (o.beta || 0) * RAD_TO_DEG;
                 const gamma = (o.gamma || 0) * RAD_TO_DEG;
                 
-                this.targetRotateX = this.clamp(beta * 0.6, -35, 35);
-                this.targetRotateY = this.clamp(gamma * 0.8, -35, 35);
+                // Калибровка: запоминаем начальное положение
+                if (!this.calibrated) {
+                    this.baseBeta = beta;
+                    this.baseGamma = gamma;
+                    this.calibrated = true;
+                    console.log('Calibrated at:', this.baseBeta.toFixed(1), this.baseGamma.toFixed(1));
+                }
                 
-                // Применяем сразу к карточке
+                // Вычисляем отклонение от начального положения
+                const deltaBeta = beta - this.baseBeta;
+                const deltaGamma = gamma - this.baseGamma;
+                
+                this.targetRotateX = this.clamp(deltaBeta * 0.8, -25, 25);
+                this.targetRotateY = this.clamp(deltaGamma * 1.0, -25, 25);
+                
                 this.applyTransform();
             }
         });
@@ -174,8 +189,21 @@ class Card3D {
         this.motionEnabled = true;
         window.addEventListener('deviceorientation', (e) => {
             if (e.beta !== null && e.gamma !== null) {
-                this.targetRotateX = this.clamp((e.beta - 45) * 0.4, -30, 30);
-                this.targetRotateY = this.clamp(e.gamma * 0.6, -30, 30);
+                const beta = e.beta;
+                const gamma = e.gamma;
+                
+                // Калибровка
+                if (!this.calibrated) {
+                    this.baseBeta = beta;
+                    this.baseGamma = gamma;
+                    this.calibrated = true;
+                }
+                
+                const deltaBeta = beta - this.baseBeta;
+                const deltaGamma = gamma - this.baseGamma;
+                
+                this.targetRotateX = this.clamp(deltaBeta * 0.8, -25, 25);
+                this.targetRotateY = this.clamp(deltaGamma * 1.0, -25, 25);
             }
         }, true);
     }
