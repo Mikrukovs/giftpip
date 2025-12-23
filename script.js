@@ -486,7 +486,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     var scratch = new ScratchCard('scratch-canvas', {
         brushSize: 45,
-        revealThreshold: 80,
+        revealThreshold: 65,
         onProgress: function(percent) {
             // Progress tracking
         },
