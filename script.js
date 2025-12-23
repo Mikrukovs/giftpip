@@ -90,10 +90,15 @@ class Card3D {
         tg.onEvent('deviceOrientationChanged', () => {
             const o = tg.DeviceOrientation;
             if (o) {
-                const beta = o.beta || 0;
-                const gamma = o.gamma || 0;
-                this.targetRotateX = this.clamp(beta * 0.4, -30, 30);
-                this.targetRotateY = this.clamp(gamma * 0.6, -30, 30);
+                // Данные приходят в РАДИАНАХ! Конвертируем в градусы
+                const RAD_TO_DEG = 180 / Math.PI; // ≈ 57.3
+                const beta = (o.beta || 0) * RAD_TO_DEG;
+                const gamma = (o.gamma || 0) * RAD_TO_DEG;
+                
+                this.targetRotateX = this.clamp(beta * 0.5, -30, 30);
+                this.targetRotateY = this.clamp(gamma * 0.7, -30, 30);
+                
+                // console.log('Tilt:', beta.toFixed(1), gamma.toFixed(1));
             }
         });
         
