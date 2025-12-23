@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;700;900&family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-container">
@@ -24,9 +24,21 @@
             <div class="card-3d" id="card3d">
                 <!-- Content layer -->
                 <div class="content-layer" id="content">
-                    <div class="placeholder-content">
-                        <span class="gift-emoji">🎉</span>
-                        <p class="gift-text">Здесь будет твой подарок!</p>
+                    <div class="gift-card">
+                        <!-- Pattern background -->
+                        <img class="gift-pattern" src="assets/icons-pattern.svg" alt="">
+                        
+                        <!-- Logo -->
+                        <img class="gift-logo" src="assets/mobbin-logo.png" alt="Mobbin">
+                        
+                        <!-- Text -->
+                        <div class="gift-text-layout">
+                            <p class="gift-title">Подписка Mobbin</p>
+                            <p class="gift-subtitle">на 1 год</p>
+                        </div>
+                        
+                        <!-- Button -->
+                        <button class="gift-button">Получить</button>
                     </div>
                 </div>
                 

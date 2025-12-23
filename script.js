@@ -313,20 +313,33 @@ class ScratchCard {
     }
     
     drawScratchLayer() {
+        // Silver metallic gradient
         const gradient = this.ctx.createLinearGradient(0, 0, this.width, this.height);
-        gradient.addColorStop(0, '#a0a0a0');
-        gradient.addColorStop(0.3, '#d0d0d0');
-        gradient.addColorStop(0.5, '#b8b8b8');
-        gradient.addColorStop(0.7, '#c8c8c8');
-        gradient.addColorStop(1, '#a8a8a8');
+        gradient.addColorStop(0, '#c4c4c4');
+        gradient.addColorStop(0.2, '#e0e0e0');
+        gradient.addColorStop(0.4, '#d0d0d0');
+        gradient.addColorStop(0.6, '#e8e8e8');
+        gradient.addColorStop(0.8, '#d4d4d4');
+        gradient.addColorStop(1, '#b8b8b8');
         
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, this.width, this.height);
         
-        this.ctx.font = 'bold 16px Unbounded, sans-serif';
+        // Add subtle pattern texture
+        this.ctx.globalAlpha = 0.03;
+        for (let i = 0; i < 100; i++) {
+            const x = Math.random() * this.width;
+            const y = Math.random() * this.height;
+            this.ctx.fillStyle = Math.random() > 0.5 ? '#fff' : '#999';
+            this.ctx.fillRect(x, y, 2, 2);
+        }
+        this.ctx.globalAlpha = 1;
+        
+        // Scratch hint text
+        this.ctx.font = 'bold 14px Unbounded, sans-serif';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.fillStyle = '#666';
+        this.ctx.fillStyle = '#777';
         this.ctx.fillText('✨ СОТРИ МЕНЯ ✨', this.width / 2, this.height / 2);
     }
     
