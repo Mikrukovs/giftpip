@@ -20,67 +20,127 @@ if (tg) {
 class Card3D {
     constructor(elementId) {
         this.card = document.getElementById(elementId);
+        this.wrapper = this.card.parentElement;
         this.rotateX = 0;
         this.rotateY = 0;
         this.targetRotateX = 0;
         this.targetRotateY = 0;
+        this.gyroEnabled = false;
+        this.isTouching = false;
         
-        this.setupGyroscope();
+        this.setupTouchTilt();
         this.setupMouse();
+        this.tryGyroscope();
         this.animate();
     }
     
-    setupGyroscope() {
+    tryGyroscope() {
+        // Попробуем Telegram Gyroscope API
+        if (tg?.Gyroscope) {
+            tg.Gyroscope.start({ refresh_rate: 60 }, (started) => {
+                if (started) {
+                    this.gyroEnabled = true;
+                    tg.onEvent('gyroscopeChanged', (data) => {
+                        if (!this.isTouching) {
+                            this.targetRotateX = this.clamp(data.x * 30, -25, 25);
+                            this.targetRotateY = this.clamp(data.y * 30, -25, 25);
+                        }
+                    });
+                }
+            });
+            return;
+        }
+        
         // iOS 13+ требует разрешения
         if (typeof DeviceOrientationEvent !== 'undefined' && 
             typeof DeviceOrientationEvent.requestPermission === 'function') {
-            document.addEventListener('touchstart', () => {
-                DeviceOrientationEvent.requestPermission()
-                    .then(response => {
-                        if (response === 'granted') {
-                            this.bindGyroscope();
-                        }
-                    })
-                    .catch(console.error);
-            }, { once: true });
-        } else {
+            // Создаём кнопку для запроса разрешения
+            this.createGyroButton();
+        } else if ('DeviceOrientationEvent' in window) {
+            // Android и старые iOS
             this.bindGyroscope();
         }
     }
     
+    createGyroButton() {
+        const btn = document.createElement('button');
+        btn.className = 'gyro-btn';
+        btn.innerHTML = '📱 Включить наклон';
+        btn.onclick = async () => {
+            try {
+                const permission = await DeviceOrientationEvent.requestPermission();
+                if (permission === 'granted') {
+                    this.bindGyroscope();
+                    btn.remove();
+                }
+            } catch (e) {
+                console.error('Gyro permission error:', e);
+                btn.remove();
+            }
+        };
+        document.querySelector('.app-container').appendChild(btn);
+    }
+    
     bindGyroscope() {
+        this.gyroEnabled = true;
         window.addEventListener('deviceorientation', (e) => {
-            if (e.beta !== null && e.gamma !== null) {
-                // beta: наклон вперёд-назад (-180 to 180)
-                // gamma: наклон влево-вправо (-90 to 90)
+            if (e.beta !== null && e.gamma !== null && !this.isTouching) {
                 this.targetRotateX = this.clamp(e.beta - 45, -25, 25);
                 this.targetRotateY = this.clamp(e.gamma, -25, 25);
+                this.updateShine(0.5 + e.gamma / 90, 0.5 + (e.beta - 45) / 90);
+            }
+        }, true);
+    }
+    
+    // Touch-based tilt (работает всегда)
+    setupTouchTilt() {
+        this.wrapper.addEventListener('touchstart', (e) => {
+            this.isTouching = true;
+        }, { passive: true });
+        
+        this.wrapper.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                const rect = this.wrapper.getBoundingClientRect();
+                const x = (e.touches[0].clientX - rect.left) / rect.width;
+                const y = (e.touches[0].clientY - rect.top) / rect.height;
+                
+                this.targetRotateY = (x - 0.5) * 40;
+                this.targetRotateX = (0.5 - y) * 40;
+                this.updateShine(x, y);
+            }
+        }, { passive: true });
+        
+        this.wrapper.addEventListener('touchend', () => {
+            this.isTouching = false;
+            if (!this.gyroEnabled) {
+                this.targetRotateX = 0;
+                this.targetRotateY = 0;
+                this.updateShine(0.5, 0.5);
             }
         });
     }
     
     setupMouse() {
-        const wrapper = this.card.parentElement;
-        
-        wrapper.addEventListener('mousemove', (e) => {
-            const rect = wrapper.getBoundingClientRect();
+        this.wrapper.addEventListener('mousemove', (e) => {
+            const rect = this.wrapper.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width;
             const y = (e.clientY - rect.top) / rect.height;
             
             this.targetRotateY = (x - 0.5) * 30;
             this.targetRotateX = (0.5 - y) * 30;
-            
-            // Update shine position
-            document.documentElement.style.setProperty('--mouse-x', `${x * 100}%`);
-            document.documentElement.style.setProperty('--mouse-y', `${y * 100}%`);
+            this.updateShine(x, y);
         });
         
-        wrapper.addEventListener('mouseleave', () => {
+        this.wrapper.addEventListener('mouseleave', () => {
             this.targetRotateX = 0;
             this.targetRotateY = 0;
-            document.documentElement.style.setProperty('--mouse-x', '50%');
-            document.documentElement.style.setProperty('--mouse-y', '50%');
+            this.updateShine(0.5, 0.5);
         });
+    }
+    
+    updateShine(x, y) {
+        document.documentElement.style.setProperty('--mouse-x', `${x * 100}%`);
+        document.documentElement.style.setProperty('--mouse-y', `${y * 100}%`);
     }
     
     clamp(value, min, max) {
@@ -88,9 +148,8 @@ class Card3D {
     }
     
     animate() {
-        // Плавная интерполяция
-        this.rotateX += (this.targetRotateX - this.rotateX) * 0.08;
-        this.rotateY += (this.targetRotateY - this.rotateY) * 0.08;
+        this.rotateX += (this.targetRotateX - this.rotateX) * 0.1;
+        this.rotateY += (this.targetRotateY - this.rotateY) * 0.1;
         
         document.documentElement.style.setProperty('--card-rotate-x', `${this.rotateX}deg`);
         document.documentElement.style.setProperty('--card-rotate-y', `${this.rotateY}deg`);
