@@ -95,10 +95,11 @@ class Card3D {
                 const beta = (o.beta || 0) * RAD_TO_DEG;
                 const gamma = (o.gamma || 0) * RAD_TO_DEG;
                 
-                this.targetRotateX = this.clamp(beta * 0.5, -30, 30);
-                this.targetRotateY = this.clamp(gamma * 0.7, -30, 30);
+                this.targetRotateX = this.clamp(beta * 0.6, -35, 35);
+                this.targetRotateY = this.clamp(gamma * 0.8, -35, 35);
                 
-                // console.log('Tilt:', beta.toFixed(1), gamma.toFixed(1));
+                // Применяем сразу к карточке
+                this.applyTransform();
             }
         });
         
@@ -204,13 +205,19 @@ class Card3D {
         return Math.min(Math.max(value, min), max);
     }
     
+    applyTransform() {
+        // Плавная интерполяция
+        this.rotateX += (this.targetRotateX - this.rotateX) * 0.15;
+        this.rotateY += (this.targetRotateY - this.rotateY) * 0.15;
+        
+        // Применяем трансформацию напрямую к карточке
+        if (this.card) {
+            this.card.style.transform = `rotateX(${this.rotateX}deg) rotateY(${this.rotateY}deg)`;
+        }
+    }
+    
     animate() {
-        this.rotateX += (this.targetRotateX - this.rotateX) * 0.12;
-        this.rotateY += (this.targetRotateY - this.rotateY) * 0.12;
-        
-        document.documentElement.style.setProperty('--card-rotate-x', `${this.rotateX}deg`);
-        document.documentElement.style.setProperty('--card-rotate-y', `${this.rotateY}deg`);
-        
+        this.applyTransform();
         requestAnimationFrame(() => this.animate());
     }
     

@@ -86,8 +86,7 @@ body {
     height: 300px;
     border-radius: 24px;
     transform-style: preserve-3d;
-    transform: rotateX(var(--card-rotate-x)) rotateY(var(--card-rotate-y));
-    transition: transform 0.15s ease-out;
+    /* Transform applied via JS */
 }
 
 /* Content layer - visible immediately under scratch */
@@ -100,7 +99,8 @@ body {
     background: linear-gradient(145deg, #1a1a35 0%, #2a2a50 100%);
     border-radius: 24px;
     padding: 20px;
-    z-index: 5;
+    z-index: 1;
+    overflow: hidden;
 }
 
 .placeholder-content {
