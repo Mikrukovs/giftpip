@@ -256,6 +256,17 @@ body {
 }
 
 /* Scratch canvas */
+/* Scratch layer wrapper */
+.scratch-wrapper {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    z-index: 10;
+    overflow: hidden;
+}
+
 #scratch-canvas {
     position: absolute;
     inset: 0;
@@ -264,7 +275,22 @@ body {
     border-radius: 10px;
     cursor: pointer;
     touch-action: none;
-    z-index: 10;
+}
+
+/* Shimmer effect on scratch layer */
+.scratch-shimmer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        ellipse 60% 60% at var(--shine-x) var(--shine-y),
+        rgba(255, 255, 255, 0.4) 0%,
+        rgba(255, 255, 255, 0.15) 40%,
+        transparent 70%
+    );
+    pointer-events: none;
+    border-radius: 10px;
 }
 
 /* Progress */
