@@ -261,8 +261,8 @@ class Card3D {
             
             // Update shimmer position for pattern
             // Convert rotation to shine position (inverted for natural light reflection)
-            const shineX = 50 + this.rotateY * 1.5; // -25..25 -> 12.5..87.5
-            const shineY = 50 - this.rotateX * 1.5;
+            const shineX = 50 + this.rotateY * 2.5; // More movement for visible shimmer
+            const shineY = 50 - this.rotateX * 2.5;
             document.documentElement.style.setProperty('--shine-x', `${shineX}%`);
             document.documentElement.style.setProperty('--shine-y', `${shineY}%`);
         }

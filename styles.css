@@ -150,16 +150,26 @@ body {
 .gift-pattern-wrapper::after {
     content: '';
     position: absolute;
-    inset: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(
-        ellipse 60% 60% at var(--shine-x) var(--shine-y),
-        rgba(255, 255, 255, 0.5) 0%,
-        rgba(255, 255, 255, 0.2) 30%,
-        transparent 70%
-    );
-    mix-blend-mode: overlay;
+    inset: -100%;
+    width: 300%;
+    height: 300%;
+    background: 
+        radial-gradient(
+            ellipse 40% 50% at calc(var(--shine-x) - 20%) calc(var(--shine-y) + 30%),
+            rgba(162, 155, 252, 0.7) 0%,
+            rgba(162, 155, 252, 0) 60%
+        ),
+        radial-gradient(
+            ellipse 45% 45% at var(--shine-x) var(--shine-y),
+            rgba(177, 235, 247, 0.7) 0%,
+            rgba(177, 235, 247, 0) 55%
+        ),
+        radial-gradient(
+            ellipse 40% 50% at calc(var(--shine-x) + 25%) calc(var(--shine-y) - 20%),
+            rgba(247, 177, 197, 0.7) 0%,
+            rgba(238, 177, 247, 0) 60%
+        );
+    mix-blend-mode: multiply;
     pointer-events: none;
     transition: none;
 }
