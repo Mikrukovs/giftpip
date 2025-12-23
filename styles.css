@@ -139,7 +139,7 @@ body {
 
 .gift-text-layout {
     position: absolute;
-    top: 200px;
+    top: 280px;
     width: 100%;
     text-align: center;
     display: flex;
@@ -334,7 +334,7 @@ body {
     }
     
     .gift-text-layout {
-        top: 175px;
+        top: 245px;
     }
     
     .gift-title {
