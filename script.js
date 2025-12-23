@@ -477,21 +477,13 @@ function createConfetti() {
 document.addEventListener('DOMContentLoaded', () => {
     const card3d = new Card3D('card3d');
     
-    const progressFill = document.getElementById('progress-fill');
-    const progressText = document.getElementById('progress-text');
-    const hint = document.getElementById('hint');
-    
     const scratch = new ScratchCard('scratch-canvas', {
         brushSize: 45,
         revealThreshold: 80,
         onProgress: (percent) => {
-            progressFill.style.width = percent + '%';
-            progressText.textContent = `Стёрто: ${percent}%`;
-            if (percent > 5) hint.classList.add('hidden');
+            // Progress tracking (no UI)
         },
         onReveal: () => {
-            progressText.textContent = '🎉 Открыто!';
-            progressFill.style.width = '100%';
             createConfetti();
         }
     });
