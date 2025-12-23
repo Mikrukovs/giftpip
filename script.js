@@ -5,8 +5,7 @@ if (tg) {
     tg.ready();
     tg.expand();
     
-    // Don't use fullscreen - it breaks status bar color control
-    // if (tg.requestFullscreen) tg.requestFullscreen();
+    if (tg.requestFullscreen) tg.requestFullscreen();
     if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
     
     // Set header/status bar color (works only when NOT in fullscreen)

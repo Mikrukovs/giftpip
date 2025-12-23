@@ -57,9 +57,6 @@ body {
     height: 100%;
     padding: 20px;
     gap: 24px;
-    background: 
-        radial-gradient(ellipse at 30% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
-        radial-gradient(ellipse at 70% 80%, rgba(240, 147, 251, 0.08) 0%, transparent 50%);
 }
 
 .header {
