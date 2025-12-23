@@ -43,6 +43,8 @@ class ScratchCard {
         this.isDrawing = false;
         this.isRevealed = false;
         this.lastPoint = null;
+        this.lastHapticTime = 0;
+        this.hapticInterval = 50; // ms between haptic feedbacks
         
         this.init();
     }
@@ -57,20 +59,30 @@ class ScratchCard {
         const container = this.canvas.parentElement;
         const rect = container.getBoundingClientRect();
         
-        // Set canvas size to match container
-        this.canvas.width = rect.width;
-        this.canvas.height = rect.height;
+        // Get computed styles to match border-radius
+        const computedStyle = getComputedStyle(container);
+        const borderRadius = computedStyle.borderRadius;
         
         // Handle high DPI displays
         const dpr = window.devicePixelRatio || 1;
-        this.canvas.width = rect.width * dpr;
-        this.canvas.height = rect.height * dpr;
-        this.canvas.style.width = rect.width + 'px';
-        this.canvas.style.height = rect.height + 'px';
+        
+        // Set canvas internal resolution
+        this.canvas.width = Math.round(rect.width * dpr);
+        this.canvas.height = Math.round(rect.height * dpr);
+        
+        // Set canvas display size to exactly match container
+        this.canvas.style.width = '100%';
+        this.canvas.style.height = '100%';
+        this.canvas.style.position = 'absolute';
+        this.canvas.style.top = '0';
+        this.canvas.style.left = '0';
+        this.canvas.style.borderRadius = borderRadius;
+        
         this.ctx.scale(dpr, dpr);
         
         this.width = rect.width;
         this.height = rect.height;
+        this.dpr = dpr;
     }
     
     drawScratchLayer() {
@@ -185,6 +197,15 @@ class ScratchCard {
         this.scratch(this.lastPoint, currentPoint);
         this.lastPoint = currentPoint;
         
+        // Continuous haptic feedback while scratching
+        const now = Date.now();
+        if (now - this.lastHapticTime > this.hapticInterval) {
+            if (tg?.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+            this.lastHapticTime = now;
+        }
+        
         this.checkProgress();
     }
     
@@ -277,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const scratchCard = new ScratchCard('scratch-canvas', {
         brushSize: 45,
-        revealThreshold: 55,
+        revealThreshold: 80,
         onProgress: (percentage) => {
             progressFill.style.width = percentage + '%';
             progressText.textContent = `Стёрто: ${percentage}%`;
