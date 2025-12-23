@@ -28,6 +28,7 @@ if (tg) {
     
     // Set body background
     document.body.style.backgroundColor = tp.bg_color || '#0a0a0f';
+}
 
 // ============================================
 // PSEUDO 3D CARD WITH TELEGRAM DEVICE MOTION
