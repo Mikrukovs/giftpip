@@ -336,7 +336,7 @@ class ScratchCard {
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         this.ctx.fillStyle = '#777';
-        this.ctx.fillText('SCRATCH ME', this.width / 2, this.height / 2);
+        this.ctx.fillText('Сотри меня', this.width / 2, this.height / 2);
     }
     
     bindEvents() {
