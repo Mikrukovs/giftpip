@@ -258,6 +258,13 @@ class Card3D {
         // Применяем трансформацию напрямую к карточке
         if (this.card) {
             this.card.style.transform = `rotateX(${this.rotateX}deg) rotateY(${this.rotateY}deg)`;
+            
+            // Update shimmer position for pattern
+            // Convert rotation to shine position (inverted for natural light reflection)
+            const shineX = 50 + this.rotateY * 1.5; // -25..25 -> 12.5..87.5
+            const shineY = 50 - this.rotateX * 1.5;
+            document.documentElement.style.setProperty('--shine-x', `${shineX}%`);
+            document.documentElement.style.setProperty('--shine-y', `${shineY}%`);
         }
     }
     

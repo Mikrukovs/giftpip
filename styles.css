@@ -13,6 +13,10 @@
     --tg-theme-section-header-text-color: #a0a0a0;
     --tg-theme-subtitle-text-color: #a0a0a0;
     --tg-theme-destructive-text-color: #ff5555;
+    
+    /* Shine position for pattern shimmer */
+    --shine-x: 50%;
+    --shine-y: 50%;
 }
 
 * {
@@ -123,6 +127,41 @@ body {
     left: -39px;
     top: 25px;
     pointer-events: none;
+}
+
+/* Pattern shimmer container */
+.gift-pattern-wrapper {
+    position: absolute;
+    width: 349px;
+    height: 203px;
+    left: -39px;
+    top: 25px;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.gift-pattern-wrapper .gift-pattern {
+    position: relative;
+    left: 0;
+    top: 0;
+}
+
+/* Shimmer overlay that moves with card tilt */
+.gift-pattern-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+        ellipse 60% 60% at var(--shine-x) var(--shine-y),
+        rgba(255, 255, 255, 0.5) 0%,
+        rgba(255, 255, 255, 0.2) 30%,
+        transparent 70%
+    );
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    transition: none;
 }
 
 .gift-logo {
