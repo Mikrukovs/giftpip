@@ -81,11 +81,11 @@ body {
 
 .subtitle {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', 'SF Pro Text', sans-serif;
-    font-size: 24px;
+    font-size: 20px;
     font-style: normal;
     font-weight: 400;
-    line-height: 28px;
-    letter-spacing: 0.07px;
+    line-height: 25px;
+    letter-spacing: -0.45px;
     color: var(--tg-theme-hint-color);
 }
 
