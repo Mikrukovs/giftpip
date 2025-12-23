@@ -59,10 +59,6 @@ class ScratchCard {
         const container = this.canvas.parentElement;
         const rect = container.getBoundingClientRect();
         
-        // Get computed styles to match border-radius
-        const computedStyle = getComputedStyle(container);
-        const borderRadius = computedStyle.borderRadius;
-        
         // Handle high DPI displays
         const dpr = window.devicePixelRatio || 1;
         
@@ -70,14 +66,12 @@ class ScratchCard {
         this.canvas.width = Math.round(rect.width * dpr);
         this.canvas.height = Math.round(rect.height * dpr);
         
-        // Set canvas display size to exactly match container
-        this.canvas.style.width = '100%';
-        this.canvas.style.height = '100%';
-        this.canvas.style.position = 'absolute';
-        this.canvas.style.top = '0';
-        this.canvas.style.left = '0';
-        this.canvas.style.borderRadius = borderRadius;
+        // Set canvas display size
+        this.canvas.style.width = rect.width + 'px';
+        this.canvas.style.height = rect.height + 'px';
         
+        // Reset transform and apply DPI scaling
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
         this.ctx.scale(dpr, dpr);
         
         this.width = rect.width;
