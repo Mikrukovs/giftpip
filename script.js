@@ -8,9 +8,26 @@ if (tg) {
     if (tg.requestFullscreen) tg.requestFullscreen();
     if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
     
-    document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#0a0a0f');
-    document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#ffffff');
-    document.documentElement.style.setProperty('--tg-theme-hint-color', tg.themeParams.hint_color || '#a0a0a0');
+    // Apply all Telegram theme colors
+    const tp = tg.themeParams;
+    const root = document.documentElement.style;
+    
+    root.setProperty('--tg-theme-bg-color', tp.bg_color || '#0a0a0f');
+    root.setProperty('--tg-theme-text-color', tp.text_color || '#ffffff');
+    root.setProperty('--tg-theme-hint-color', tp.hint_color || '#a0a0a0');
+    root.setProperty('--tg-theme-link-color', tp.link_color || '#5865f2');
+    root.setProperty('--tg-theme-button-color', tp.button_color || '#5865f2');
+    root.setProperty('--tg-theme-button-text-color', tp.button_text_color || '#ffffff');
+    root.setProperty('--tg-theme-secondary-bg-color', tp.secondary_bg_color || '#1a1a2e');
+    root.setProperty('--tg-theme-header-bg-color', tp.header_bg_color || '#0a0a0f');
+    root.setProperty('--tg-theme-accent-text-color', tp.accent_text_color || '#5865f2');
+    root.setProperty('--tg-theme-section-bg-color', tp.section_bg_color || '#1a1a2e');
+    root.setProperty('--tg-theme-section-header-text-color', tp.section_header_text_color || '#a0a0a0');
+    root.setProperty('--tg-theme-subtitle-text-color', tp.subtitle_text_color || '#a0a0a0');
+    root.setProperty('--tg-theme-destructive-text-color', tp.destructive_text_color || '#ff5555');
+    
+    // Set body background
+    document.body.style.backgroundColor = tp.bg_color || '#0a0a0f';
 }
 
 // ============================================

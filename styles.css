@@ -1,12 +1,18 @@
 :root {
+    /* Telegram Theme Colors (defaults, overridden by JS) */
     --tg-theme-bg-color: #0a0a0f;
     --tg-theme-text-color: #ffffff;
     --tg-theme-hint-color: #a0a0a0;
-    
-    --card-rotate-x: 0deg;
-    --card-rotate-y: 0deg;
-    --mouse-x: 50%;
-    --mouse-y: 50%;
+    --tg-theme-link-color: #5865f2;
+    --tg-theme-button-color: #5865f2;
+    --tg-theme-button-text-color: #ffffff;
+    --tg-theme-secondary-bg-color: #1a1a2e;
+    --tg-theme-header-bg-color: #0a0a0f;
+    --tg-theme-accent-text-color: #5865f2;
+    --tg-theme-section-bg-color: #1a1a2e;
+    --tg-theme-section-header-text-color: #a0a0a0;
+    --tg-theme-subtitle-text-color: #a0a0a0;
+    --tg-theme-destructive-text-color: #ff5555;
 }
 
 * {
@@ -61,10 +67,7 @@ body {
 .title {
     font-size: 1.8rem;
     font-weight: 900;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--tg-theme-text-color);
     margin-bottom: 8px;
 }
 
@@ -96,7 +99,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(145deg, #1a1a35 0%, #2a2a50 100%);
+    background: var(--tg-theme-secondary-bg-color);
     border-radius: 24px;
     padding: 20px;
     z-index: 1;
@@ -144,7 +147,7 @@ body {
 .progress-bar {
     width: 100%;
     height: 6px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--tg-theme-section-bg-color);
     border-radius: 3px;
     overflow: hidden;
     margin-bottom: 8px;
@@ -153,10 +156,9 @@ body {
 .progress-fill {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    background: var(--tg-theme-button-color);
     border-radius: 3px;
     transition: width 0.3s ease-out;
-    box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
 }
 
 .progress-text {
@@ -174,9 +176,8 @@ body {
     align-items: center;
     gap: 8px;
     padding: 12px 20px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--tg-theme-section-bg-color);
     border-radius: 100px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
     animation: fadeInUp 0.6s ease-out 0.6s both;
     transition: opacity 0.3s, transform 0.3s;
 }
@@ -193,8 +194,8 @@ body {
     left: 50%;
     transform: translateX(-50%);
     padding: 12px 24px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
     border: none;
     border-radius: 50px;
     font-family: 'Unbounded', sans-serif;
@@ -202,7 +203,6 @@ body {
     font-weight: 500;
     cursor: pointer;
     z-index: 1000;
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
     animation: fadeInUp 0.5s ease;
 }
 
