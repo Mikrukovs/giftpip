@@ -433,16 +433,19 @@ class ScratchCard {
     reveal() {
         this.isRevealed = true;
         
-        this.canvas.style.transition = 'opacity 0.5s ease';
-        this.canvas.style.opacity = '0';
+        // Hide both canvas and shimmer
+        var wrapper = this.canvas.parentElement;
+        if (wrapper) {
+            wrapper.style.transition = 'opacity 0.5s ease';
+            wrapper.style.opacity = '0';
+        }
         
         if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         
         this.options.onReveal();
         
-        var canvas = this.canvas;
         setTimeout(function() {
-            canvas.style.display = 'none';
+            if (wrapper) wrapper.style.display = 'none';
         }, 500);
     }
 }
