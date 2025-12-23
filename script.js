@@ -530,13 +530,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Show gift content after 1 second delay
+    // Show gift content after 400ms delay
     setTimeout(function() {
         var giftContent = document.getElementById('gift-content');
         if (giftContent) {
             giftContent.classList.add('visible');
         }
-    }, 1000);
+    }, 400);
     
     window.card3d = card3d;
     window.scratch = scratch;
